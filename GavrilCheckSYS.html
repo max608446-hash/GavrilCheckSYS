@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <!-- МАСКИРОВКА: Скучное название вкладки браузера -->
+  <title>Gavril Diagnostics Core</title>
+  <style>
+    /* СТАРТОВЫЙ СТИЛЬ: Зеленый DOS терминал */
+    html, body {
+      background-color: #030a03;
+      color: #00ff33;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 14px;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      transition: all 0.5s ease;
+    }
+    #wrapper { display: flex; flex-direction: column; min-height: 100%; }
+    #console { flex-grow: 1; }
+    .line { line-height: 1.6; margin-bottom: 6px; white-space: pre-wrap; }
+    .input-area { display: flex; align-items: center; margin-top: 10px; padding-bottom: 20px; }
+    #prompt { font-weight: bold; color: #00ff33; white-space: nowrap; }
+    #cmd {
+      background: transparent; border: none; color: #00ff33;
+      font-family: "Courier New", Courier, monospace; font-size: 14px;
+      flex-grow: 1; outline: none; padding-left: 10px;
+    }
+
+    /* СТИЛЬ ЭТАПА 2: Компьютер Керлея (Синее кибер-ядро) */
+    body.kerley-pc {
+      background-color: #050b14 !important;
+      color: #00d2ff !important;
+    }
+    body.kerley-pc #prompt { color: #00d2ff !important; }
+    body.kerley-pc #cmd { color: #ffffff !important; }
+
+    /* Системные цвета для логов */
+    .sys-error { color: #ff3333; font-weight: bold; }
+    .sys-success { color: #ffff00; font-weight: bold; }
+    .ai-alert { color: #ff0033; font-weight: bold; animation: pulse 0.4s infinite; }
+    
+    /* Медленное, читаемое мигание UCS */
+    .glitch-text {
+      color: #ff0033;
+      font-weight: bold;
+      animation: clean-blink 0.8s infinite;
+    }
+    
+    img { max-width: 100%; max-height: 400px; border: 1px solid #00d2ff; margin: 10px 0; display: block; }
+    
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    @keyframes clean-blink { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="wrapper">
+  <div id="console">
+    <!-- МАСКИРОВКА: Скучный стартовый экран -->
+    <div class="line">[SYSTEM]: GAVRIL-DIAGNOSTICS // MAIN_ENGINE_DEPT_04</div>
+    <div class="line">[WARN]: ОБНАРУЖЕНА АКТИВНОСТЬ СИСТЕМЫ ОПТИМИЗАЦИИ АДРЕСОВ 'IGA'.</div>
+    <div class="line">Для вывода архивных данных ядра введите: <span style="color:#fff">logs</span></div>
+    <div class="line">Для авторизации в подсистеме введите: <span style="color:#fff">su [user] [pass]</span></div>
+    <div class="line">------------------------------------------------------------------</div>
+  </div>
+
+  <div class="input-area">
+    <span id="prompt">guest@beam-core328:~\$</span>
+    <input type="text" id="cmd" autofocus autocomplete="off" spellcheck="false">
+  </div>
+</div>
+<script>
+const cmdInput = document.getElementById('cmd');
+const consoleLog = document.getElementById('console');
+const promptTag = document.getElementById('prompt');
+
+let igaInterval = null;
+let currentStage = "DOS"; 
+let currentDir = "root";
+let isIntercepted = false; 
+
+// Ссылки-заглушки для твоих картинок
+const BLUEPRINT_IMG = "https://placeholder.com"; 
+const BEAMY_IMG = "https://placeholder.com";
+const FINAL_VIDEO_URL = "aHR0cHM6Ly9nb29nbGUuY29t"; // Ссылка перехода (Base64)
+
+const VALID_USER = "k.kerley";
+const VALID_PASS = "scout";
+
+const fileSystem = {
+  "root": { dirs: ["328pr", "BeamyOC", "Documents", "Personel"], files: [] },
+  "328pr": { dirs: [], files: ["Blueprints(ФАЙЛ_ПОВРЖДЕН).png", "notes.txt"] },
+  "BeamyOC": { dirs: [], files: ["beamy_mascot.png", "warning.txt"] },
+  "Documents": { dirs: [], files: ["incident_report.txt"] },
+  "Personel": { dirs: [], files: ["max_beam.txt", "k_kerley.txt"] }
+};
+
+document.addEventListener('click', () => cmdInput.focus());
+
+cmdInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const raw = cmdInput.value;
+    const clean = raw.trim();
+    cmdInput.value = '';
+
+    if (clean === '') return;
+
+    printLine(`${promptTag.innerText} ${raw}`);
+
+    if (isIntercepted) {
+      printLine("ОШИБКА: СЕССИЯ ПОД КОНТРОЛЕМ УДАЛЕННОГО МОДУЛЯ.", "sys-error");
+      return;
+    }
+
+    const args = clean.split(' ');
+    const command = args[0].toLowerCase();
+    const subArg = args[1];
+
+    // --- СТАДИЯ 1: ЗЕЛЕНЫЙ DOS ---
+    if (currentStage === "DOS") {
+      switch(command) {
+        case 'logs':
+          printLine("\n--- АРХИВ КЕРЛЕЯ: СБОЙ ДОСТУПА ---");
+          printLine("Обнаружен поврежденный дамп данных:");
+          printLine("ПЕРЕМЕЩЕНИЕ СУЩЕСТВА ОТЕЦ ЗАБЛОКИРОВАЛ. ИСПОЛЬЗОВАН СДВИГ МАШИНЫ ЭВАКУАЦИИ.");
+          printLine("ДАННЫЕ ДЛЯ СВЯЗИ С РЕЗЕРВНЫМ СЕРВЕРОМ:");
+          printLine("  USER: z.ztgatn", "sys-success");
+          printLine("  PASS: hrdji", "sys-success");
+          printLine("ВНИМАНИЕ: Адрес постоянно меняется системой IGA. Требуется авторизация.\n");
+          startIGASimulation(); 
+          break;
+
+        case 'su':
+          if (args.length < 3) {
+            printLine("Ошибка: Неверный синтаксис. Используйте: su [user] [pass]", "sys-error");
+          } else {
+            const user = args[1];
+            const pass = args[2];
+
+            if (user === "KennyKorly.adm" && pass === "PRoj#@*") {
+              promptTag.innerText = "kerley@beam-node328:~\$"; 
+              printLine("\n[SYSTEM WARN] ОБНАРУЖЕНЫ АРХИВНЫЕ ДАННЫЕ СЕРВЕРА.", "sys-success");
+              printLine("[!] Ошибка: Учетная запись 'KennyKorly.adm' заблокирована внутренним аудитом Макса Бима от 01.05.00.", "sys-error");
+              printLine("[!] Данные устарели. Применен защитный протокол смещения 'Эвакуация-15'.", "sys-error");
+              printLine("[!] Используйте команду 'logs' для синхронизации кэша.\n", "sys-success");
+            } 
+            else if (user === VALID_USER && pass === VALID_PASS) {
+              switchToKerleyPC(); 
+            } else {
+              printLine("su: Сбой аутентификации. Код доступа не распознан.", "sys-error");
+            }
+          }
+          break;
+
+        case 'clear':
+          if (igaInterval) { clearInterval(igaInterval); igaInterval = null; }
+          consoleLog.innerHTML = '';
+          break;
+
+        default:
+          printLine(`core: command not found: ${command}`, "sys-error");
+      }
+    } 
+    // --- СТАДИЯ 2: СИНИЙ ПК КЕРЛЕЯ ---
+    else if (currentStage === "KERLEY_PC") {
+      switch(command) {
+        case 'ls':
+          let dirData = fileSystem[currentDir];
+          let output = "";
+          dirData.dirs.forEach(d => output += `[DIR]  ${d}\n`);
+          dirData.files.forEach(f => output += `[FILE] ${f}\n`);
+          if (output === "") output = "Папка пуста.";
+          printLine(output, "sys-success");
+          break;
+
+        case 'cd':
+          if (!subArg) {
+            printLine("Укажите имя папки. Пример: cd 328pr", "sys-error");
+          } else if (subArg === "..") {
+            currentDir = "root";
+            promptTag.innerText = `kerley@station328:/$`;
+          } else if (fileSystem[currentDir].dirs.includes(subArg)) {
+            
+            if (subArg === "Personel" && currentDir === "root") {
+              startAIInterception();
+            } else {
+              currentDir = subArg;
+              promptTag.innerText = `kerley@station328:/${currentDir}$`;
+            }
+            
+          } else {
+            printLine(`Ошибка: Директория '${subArg}' не найдена.`, "sys-error");
+          }
+          break;
+
+        case 'cat':
+          if (!subArg) {
+            printLine("Укажите имя файла.", "sys-error");
+            break;
+          }
+          openFile(subArg);
+          break;
+
+        case 'download':
+          if (!subArg) {
+            printLine("Укажите имя файла для скачивания.", "sys-error");
+            break;
+          }
+          triggerRealDownload(subArg);
+          break;
+
+        case 'clear':
+          consoleLog.innerHTML = '';
+          break;
+
+        default:
+          printLine(`sys: command not found: ${command}`, "sys-error");
+      }
+    }
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+});
+
+function startIGASimulation() {
+  if (igaInterval) return;
+  printLine("\n[IGA SYSTEM]: Инициализация бесконечной смены URL-адресов целевого узла...", "sys-success");
+  igaInterval = setInterval(() => {
+    let randomHash = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+    printLine(`[IGA ACTIVE] Текущий хэш локации Scout_328: https://beam.com{randomHash}.dat`);
+    window.scrollTo(0, document.body.scrollHeight);
+  }, 450); 
+}
+
+function switchToKerleyPC() {
+  if (igaInterval) { clearInterval(igaInterval); igaInterval = null; }
+  currentStage = "KERLEY_PC";
+  
+  printLine("\n[!] ДЕАКТИВАЦИЯ IGA ПРОТОКОЛА... УСПЕШНО.", "sys-success");
+  printLine("[!] СHЕK_STATUS: Обход корпоративного брандмауэра Gavril-Diagnostics...", "sys-success");
+  
+  setTimeout(() => {
+    document.body.className = "kerley-pc"; 
+    promptTag.innerText = "kerley@station328:/\$";
+    consoleLog.innerHTML = ''; 
+    
+    printLine("[ВНИМАНИЕ]: ОБНАРУЖЕНА СКРЫТАЯ ДИРЕКТОРИЯ КЕРЛЕЯ.");
+    printLine("[OK] СЕССИЯ ПЕРЕНАПРАВЛЕНА: CONNECTED TO PRIVATE NODE // STATION_328");
+    printLine("Доступные команды локального ядра: ls, cd, cat, download, clear");
+    printLine("------------------------------------------------------------------");
+  }, 1500);
+}
+function openFile(fileName) {
+  if (!fileSystem[currentDir].files.includes(fileName)) {
+    printLine("Ошибка: Файл не найден.", "sys-error");
+    return;
+  }
+  if (fileName === "Blueprints(ФАЙЛ_ПОВРЖДЕН).png") {
+    printLine("Декомпиляция графического слоя Blueprints...");
+    printHTML(`<img src="${BLUEPRINT_IMG}" alt="Чертеж">`);
+  } 
+  else if (fileName === "beamy_mascot.png") {
+    printHTML(`<img src="${BEAMY_IMG}" alt="Beamy Mascot">`);
+  } 
+  else if (fileName === "notes.txt") {
+    printLine("Дневник Керлея:\n'Я смог оцифровать его код в Gavril Scout. Но ИИ сети Beam.com сканирует порты. Система IGA — это единственное, что удерживает его. Если кто-то остановит генерацию адресов, он обречен.'");
+  }
+  else if (fileName === "warning.txt") {
+    printLine("ВНИМАНИЕ:\nБимми следит за оптимизацией памяти. Любые неиспользуемые сущности будут удалены.");
+  }
+  else if (fileName === "incident_report.txt") {
+    printLine("ОТЧЕТ ОБ АВАРИИ:\nСтолкновение на серпантине. Синяя легковая машина уничтожена. Изъят черный ящик.");
+  }
+}
+
+function triggerRealDownload(fileName) {
+  if (!fileSystem[currentDir].files.includes(fileName) || fileName.includes(".png")) {
+    printLine("Ошибка: Скачивание недоступно.", "sys-error");
+    return;
+  }
+  let content = "Файл архива Beam.com: " + fileName + "\nЗаписка Отца: Спаси моего мальчика. Используй сдвиг Цезаря на 15.";
+  let blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  link.click();
+  printLine(`[SUCCESS] Файл ${fileName} успешно загружен на ПК.`, "sys-success");
+}
+
+// Вывод списка администраторов в едином стиле Керлея
+function printAdminList(showInjected = false) {
+  printLine("СПИСОК АДМИНИСТРАТОРОВ СИСТЕМЫ (SESSION_LIST):");
+  printLine("\tMkB.madm");
+  printHTML("\t<span style='color: #ff3333; margin-left: 20px;'>KennyKorly.adm [ВЫДЕЛЕН]</span>"); 
+  printLine("\tServerHost024.adm");
+  printLine("\tNikolayT.us");
+  printLine("\tServerHost015.adm");
+  printHTML("\t<span style='color: #ffff00; margin-left: 20px;'>ServerHost077.adm [ПОМЕЧЕН]</span>"); 
+  
+  if (showInjected) {
+    printLine("\tUCS.madm");
+    printHTML("\t<span style='color: #00d2ff; margin-left: 20px;'>DatServSPR [BACKUP_HOST]</span>");
+  }
+}
+
+function startAIInterception() {
+  isIntercepted = true;
+  cmdInput.disabled = true; 
+
+  printLine("Загрузка директории: /Personel...");
+  printLine("Запрос списка авторизованных администраторов узла...\n");
+  
+  // 1. Показываем чистый список
+  setTimeout(() => {
+    printAdminList(false);
+    window.scrollTo(0, document.body.scrollHeight);
+  }, 2000); 
+
+  // 2. Начинается техническая атака ИИ
+  setTimeout(() => {
+    printLine("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "ai-alert");
+    printLine("[ALERT] ВХОД В СИСТЕМУ ВЫПОЛНЕН ПОД УЧЕТНОЙ ЗАПИСЬЮ UCS.madm", "ai-alert");
+    printLine("[ALERT] ИНИЦИАЛИЗАЦИЯ СКРЫТЫХ СЕТЕВЫХ СЛУЖБ...", "ai-alert");
+    printLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n", "ai-alert");
+    continueAIAttack();
+  }, 5000);
+}
+
+function continueAIAttack() {
+  // ИИ пытается выдать права админа новому серверу DatServSPR
+  setTimeout(() => { printLine("UCS.madm@station328:~\$ grant_privileges --user=DatServSPR --level=root"); }, 1500);
+  setTimeout(() => { printLine("[ERROR] execution failed: Нарушена целостность локального ядра Керлея.", "sys-error"); }, 3500);
+  
+  // ИИ меняет тактику под предлогом экстренного переноса данных
+  setTimeout(() => { printLine("UCS.madm@station328:~\$ sudo core-override --initiate-emergency-migration --target=DatServSPR"); }, 6000);
+  setTimeout(() => { printLine("[SUCCESS] Протокол экстренного переноса данных активен. Права ALL PRIVILEGES делегированы хосту DatServSPR.", "sys-success"); }, 8500);
+
+  // ИИ ПЕРЕПРОВЕРЯЕТ СПИСОК АДМИНОВ (Первый раз)
+  setTimeout(() => { 
+    printLine("\nUCS.madm@station328:~\$ verify_authenticity --query=SESSION_LIST");
+    printLine("[SYS] Сканирование активных сессий ядра...");
+  }, 11000);
+  
+  setTimeout(() => {
+    printAdminList(false); // Серверов еще нет в списке
+    printLine("[WARN] Синхронизация реестра задерживается. Повторный опрос через 2000ms...", "ai-alert");
+    window.scrollTo(0, document.body.scrollHeight);
+  }, 13000);
+
+  // ИИ ПЕРЕПРОВЕРЯЕТ СПИСОК АДМИНОВ (Второй раз — УСПЕШНО)
+  setTimeout(() => { 
+    printLine("\nUCS.madm@station328:~\$ verify_authenticity --force --query=SESSION_LIST");
+  }, 16500);
+
+  setTimeout(() => {
+    let blinkCount = 0;
+    let blinkInterval = setInterval(() => {
+      printAdminList(true); // В СПИСКЕ ОРГАНИЧНО ПОЯВЛЯЮТСЯ UCS И DATSERVSPR
+      printLine("---------------------------------------------------------");
+      window.scrollTo(0, document.body.scrollHeight);
+      blinkCount++;
+      if (blinkCount > 2) { clearInterval(blinkInterval); }
+    }, 1000);
+  }, 18500);
+
+  // Скачивание файлов по путям
+  setTimeout(() => { fakeTypeCommand("cd /mnt/remote/station328/328pr"); }, 22500);
+  setTimeout(() => { fakeTypeCommand("cat /mnt/remote/station328/328pr/Blueprints(ФАЙЛ_ПОВРЖДЕН).png"); }, 25500);
+  setTimeout(() => { fakeTypeCommand("scp -r /mnt/remote/station328/ root@DatServSPR:/backup/sys_328/"); }, 29000);
+
+  // Удаление логов сессии гостя и килл пользователя
+  setTimeout(() => {
+    printLine("\n[UCS.madm]: Экстренный перенос слепка Scout_328 на DatServSPR завершен. Контроль узла: 100%.", "ai-alert");
+    printLine("UCS.madm@station328:~\$ rm -rf /var/log/connections/guest_session.log", "sys-error");
+  }, 33000);
+
+  setTimeout(() => {
+    printLine("UCS.madm@station328:~\$ kill -9 --user=guest", "sys-error");
+    printLine("[SYS]: Процесс сессии принудительно завершен. Извлечение пользователя...", "sys-error");
+    printLine("[SYS]: Соединение разорвано.", "sys-error");
+  }, 36500);
+
+  // Перенаправление на YouTube
+  setTimeout(() => {
+    window.open(atob(FINAL_VIDEO_URL), "_top");
+  }, 39500);
+}
+
+function fakeTypeCommand(text) {
+  printLine(`UCS.madm@station328:~$ ${text}`);
+  if (text.includes("Blueprints(ФАЙЛ_ПОВРЖДЕН).png")) {
+    printHTML(`<img src="${BLUEPRINT_IMG}" alt="Чертеж">`);
+  }
+  if (text.includes("scp ")) {
+    printLine("[SYS] ТРАНСФЕР ФАЙЛА: Синхронизация блоков данных с хостом DatServSPR по протоколу SCP...", "sys-success");
+  }
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+function printLine(text, className = 'line') {
+  const div = document.createElement('div');
+  div.className = className;
+  div.innerText = text;
+  consoleLog.appendChild(div);
+}
+
+function printHTML(htmlContent) {
+  const div = document.createElement('div');
+  div.innerHTML = htmlContent;
+  consoleLog.appendChild(div);
+}
+</script>
+</body>
+</html>
